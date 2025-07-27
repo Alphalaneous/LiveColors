@@ -95,8 +95,11 @@ class $modify(MyEditorUI, EditorUI) {
 		CCMenu* m_colorsMenu;
 		std::vector<Ref<ColorVisualButton>> m_buttons;
 		int m_lastBtnCount = 0;
-		Ref<GJColorSetupLayer> m_evilColorSetupLayer;
+		GJColorSetupLayer* m_evilColorSetupLayer;
 		int m_availableBtnCount = 0;
+		~Fields() {
+			m_evilColorSetupLayer->release();
+		}
 	};
 
     void showUI(bool show) {
@@ -123,6 +126,7 @@ class $modify(MyEditorUI, EditorUI) {
 		bool isLowScale = scale <= 0.925;
 
 		fields->m_evilColorSetupLayer = GJColorSetupLayer::create(editorLayer->m_levelSettings);
+		fields->m_evilColorSetupLayer->retain();
 		fields->m_colorsMenu = CCMenu::create();
 		fields->m_colorsMenu->ignoreAnchorPointForPosition(false);
 		fields->m_colorsMenu->setAnchorPoint({0.5f, 0});
