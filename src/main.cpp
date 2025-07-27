@@ -175,7 +175,10 @@ class $modify(MyEditorUI, EditorUI) {
 			btn->setColorData(-1, {255, 255, 255}, false, 1, nullptr);
 		}
 
-		forEachObject(m_editorLayer, [&activeColors](GameObject* object) {
+		forEachObject(m_editorLayer, [&activeColors, this](GameObject* object) {
+			if (m_editorLayer->m_currentLayer != -1 
+				&& object->m_editorLayer != m_editorLayer->m_currentLayer 
+				&& object->m_editorLayer2 != m_editorLayer->m_currentLayer) return;
 			if (auto base = object->m_baseColor) {
 				activeColors.insert(base->m_colorID);
 			}
