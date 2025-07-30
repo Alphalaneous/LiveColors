@@ -6,16 +6,13 @@ using namespace geode::prelude;
 class ColorVisualButton : public CCMenuItemSpriteExtra {
 
 public:
-	EditorUI* m_editorUI;
 	int m_currentColorID = -1;
 	ColorChannelSprite* m_colorChannelSprite;
-	ColorAction* m_action;
 	CCLabelBMFont* m_IDLabel;
-	GJColorSetupLayer* m_colorSetupLayer;
 
-	static ColorVisualButton* create(EditorUI* editorUI, GJColorSetupLayer* colorSetupLayer) {
+	static ColorVisualButton* create() {
 		auto ret = new ColorVisualButton();
-		if (ret->init(editorUI, colorSetupLayer)) {
+		if (ret->init()) {
 			ret->autorelease();
 			return ret;
 		}
@@ -23,11 +20,9 @@ public:
 		return nullptr;
 	};
 
-	bool init(EditorUI* editorUI, GJColorSetupLayer* colorSetupLayer) {
+	bool init() {
 		m_colorChannelSprite = ColorChannelSprite::create();
 		CCMenuItemSpriteExtra::init(m_colorChannelSprite, nullptr, this, menu_selector(ColorVisualButton::openColorPicker));
-		m_editorUI = editorUI;
-		m_colorSetupLayer = colorSetupLayer;
 		m_IDLabel = CCLabelBMFont::create("", "bigFont.fnt");
 		m_IDLabel->setScale(0.4f);
 		m_IDLabel->setPositionX(getContentSize().width/2);
@@ -43,7 +38,6 @@ public:
 		m_currentColorID = id;
 		m_IDLabel->setString(idToString(id).c_str());
 		m_IDLabel->setScale(0.4f);
-		m_action = action;
 		m_colorChannelSprite->setColor(color);
 		m_colorChannelSprite->updateBlending(blending);
 		m_colorChannelSprite->updateOpacity(opacity);
@@ -58,10 +52,11 @@ public:
 	}
 
 	void openColorPicker(CCObject* obj) {
-		m_colorSetupLayer->m_page = (m_currentColorID - 1) / m_colorSetupLayer->m_colorsPerPage;
-		int idx = ((m_currentColorID - 1) % m_colorSetupLayer->m_colorsPerPage) + 1;
-		obj->setTag(idx);
-		m_colorSetupLayer->onColor(obj);
+		auto effectManager = LevelEditorLayer::get()->m_levelSettings->m_effectManager;
+		auto action = effectManager->getColorAction(m_currentColorID);
+		auto popup = ColorSelectPopup::create(nullptr, nullptr, action);
+		popup->m_delegate = EditorUI::get();
+		popup->show();
 	}
 
 	std::string idToString(int ID) {
@@ -95,11 +90,7 @@ class $modify(MyEditorUI, EditorUI) {
 		CCMenu* m_colorsMenu;
 		std::vector<Ref<ColorVisualButton>> m_buttons;
 		int m_lastBtnCount = 0;
-		GJColorSetupLayer* m_evilColorSetupLayer;
 		int m_availableBtnCount = 0;
-		~Fields() {
-			m_evilColorSetupLayer->release();
-		}
 	};
 
     void showUI(bool show) {
@@ -125,8 +116,6 @@ class $modify(MyEditorUI, EditorUI) {
 
 		bool isLowScale = scale <= 0.925;
 
-		fields->m_evilColorSetupLayer = GJColorSetupLayer::create(editorLayer->m_levelSettings);
-		fields->m_evilColorSetupLayer->retain();
 		fields->m_colorsMenu = CCMenu::create();
 		fields->m_colorsMenu->ignoreAnchorPointForPosition(false);
 		fields->m_colorsMenu->setAnchorPoint({0.5f, 0});
@@ -156,7 +145,7 @@ class $modify(MyEditorUI, EditorUI) {
 		fields->m_colorsMenu->setContentSize({maxWidth, 30});
 
 		for (int i = 0; i < fields->m_availableBtnCount; i++) {
-			ColorVisualButton* btn = ColorVisualButton::create(this, fields->m_evilColorSetupLayer);
+			ColorVisualButton* btn = ColorVisualButton::create();
 			fields->m_buttons.push_back(btn);
 			fields->m_colorsMenu->addChild(btn);
 		}
