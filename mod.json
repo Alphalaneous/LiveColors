@@ -8,7 +8,7 @@
 	},
 	"id": "alphalaneous.live_colors",
 	"name": "Live Colors",
-	"version": "v1.0.1",
+	"version": "v1.0.2",
 	"developer": "Alphalaneous",
 	"description": "Shows the current state of color channels in the editor live",
 	"tags": ["editor", "utility", "interface", "enhancement"],
